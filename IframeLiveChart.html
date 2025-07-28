@@ -191,7 +191,7 @@
             },
 
             title: {
-                text: 'Live random data'
+                text: 'Live sensor1 data'
             },
 
             accessibility: {
@@ -239,12 +239,33 @@
                 enabled: false
             },
 
+            // series: [
+            //     {
+            //         name: 'Random data',
+            //         lineWidth: 2,
+            //         color: Highcharts.getOptions().colors[2],
+            //         data
+            //     }
+            // ]
+            // Sửa lại đẹp hơn
             series: [
                 {
-                    name: 'Random data',
+                    name: 'sensor1s',
                     lineWidth: 2,
-                    color: Highcharts.getOptions().colors[2],
-                    data
+                    color: Highcharts.getOptions().colors[6],
+                    data,
+                    fillColor: {
+                        linearGradient: {
+                            x1: 0,
+                            x2: 0,
+                            y1: 0,
+                            y2: 1
+                        },
+                        stops: [
+                            [0, Highcharts.getOptions().colors[6]],
+                            [1, Highcharts.color(Highcharts.getOptions().colors[6]).setOpacity(0).get('rgba')]
+                        ]
+                    }
                 }
             ]
         });
