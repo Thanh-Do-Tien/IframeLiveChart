@@ -83,21 +83,23 @@
 
 <body>
 
-<!--     <figure class="highcharts-figure">
+    <figure class="highcharts-figure">
         <div id="container"></div>
         <p class="highcharts-description">
-            Chart showing data updating every second.
+            Chart showing sensor1s data updating every second.
         </p>
-    </figure> -->
+        <!-- Bổ sung nút export -->
+        <button id="exportButton">Export to Excel</button>
+    </figure>
 
     <!-- Bổ sung thêm script để xử lý lấy data và paste paste phần javascript trên web  -->
-    <input type="checkbox" id="sensor1"></input>
+    <!-- <input type="checkbox" id="sensor1"></input> -->
     <script>
         // ---------------------- Phần Era
         const eraWidget = new EraWidget();
         let config = null;
         let sensor1Value = 0;// Khởi tạo giá trị ban đầu
-        const dataBuffer = [];
+        const dataBuffer = [];// Biến lưu giá trị mảng cũ
 
         eraWidget.onConfiguration((configuration) => {
             config = configuration.realtime_configs[0];
@@ -120,10 +122,16 @@
                 series = chart.series[0];
 
             setInterval(function () {
-                const x = (new Date()).getTime(), // current time
-                    y = sensor1Value;
-
+                const x = (new Date()).getTime(), // Thời gian hiện tại
+                    y = sensor1Value;// Giá trị cảm biến
                 series.addPoint([x, y], true, true);
+
+                // Bổ sung: Giới hạn bộ đệm dữ liệu trong 30 phút (1800 giây)
+                const thirtyMinutesAgo = x - 1800 * 1000;
+                while (dataBuffer.length > 0 && dataBuffer[0][0] < thirtyMinutesAgo) {
+                    dataBuffer.shift();
+                }
+
             }, 1000);
         };
 
@@ -141,33 +149,33 @@
             return data;
         }());
 
-        // Plugin to add a pulsating marker on add point
-        Highcharts.addEvent(Highcharts.Series, 'addPoint', e => {
-            const point = e.point,
-                series = e.target;
+        // // Plugin to add a pulsating marker on add point
+        // Highcharts.addEvent(Highcharts.Series, 'addPoint', e => {
+        //     const point = e.point,
+        //         series = e.target;
 
-            if (!series.pulse) {
-                series.pulse = series.chart.renderer.circle()
-                    .add(series.markerGroup);
-            }
+        //     if (!series.pulse) {
+        //         series.pulse = series.chart.renderer.circle()
+        //             .add(series.markerGroup);
+        //     }
 
-            setTimeout(() => {
-                series.pulse
-                    .attr({
-                        x: series.xAxis.toPixels(point.x, true),
-                        y: series.yAxis.toPixels(point.y, true),
-                        r: series.options.marker.radius,
-                        opacity: 1,
-                        fill: series.color
-                    })
-                    .animate({
-                        r: 20,
-                        opacity: 0
-                    }, {
-                        duration: 1000
-                    });
-            }, 1);
-        });
+        //     setTimeout(() => {
+        //         series.pulse
+        //             .attr({
+        //                 x: series.xAxis.toPixels(point.x, true),
+        //                 y: series.yAxis.toPixels(point.y, true),
+        //                 r: series.options.marker.radius,
+        //                 opacity: 1,
+        //                 fill: series.color
+        //             })
+        //             .animate({
+        //                 r: 20,
+        //                 opacity: 0
+        //             }, {
+        //                 duration: 1000
+        //             });
+        //     }, 1);
+        // });
 
 
         Highcharts.chart('container', {
@@ -183,7 +191,7 @@
             },
 
             title: {
-                text: 'Live random Sensor1'
+                text: 'Live random data'
             },
 
             accessibility: {
@@ -233,7 +241,7 @@
 
             series: [
                 {
-                    name: 'Sensor1 data',
+                    name: 'Random data',
                     lineWidth: 2,
                     color: Highcharts.getOptions().colors[2],
                     data
@@ -241,7 +249,20 @@
             ]
         });
 
+        // Bổ sung export data ra excell
+        document.getElementById('exportButton').addEventListener('click', function () {
+            const ws = XLSX.utils.json_to_sheet(dataBuffer.map(point => ({
+                Time: (new Date(point[0])).toLocaleString(),
+                sensor1: point[1]
+            })));
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'sensor1s');
+            XLSX.writeFile(wb, 'sensor1_data.xlsx');
+        });
+
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 
 </body>
 <!-- ********************************************************************************************* -->
