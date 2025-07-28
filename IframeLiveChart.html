@@ -127,6 +127,7 @@
                 series.addPoint([x, y], true, true);
 
                 // Bổ sung: Giới hạn bộ đệm dữ liệu trong 30 phút (1800 giây)
+                dataBuffer.push([x, y]);// Đẩy data vào để xuất excell
                 const thirtyMinutesAgo = x - 1800 * 1000;
                 while (dataBuffer.length > 0 && dataBuffer[0][0] < thirtyMinutesAgo) {
                     dataBuffer.shift();
